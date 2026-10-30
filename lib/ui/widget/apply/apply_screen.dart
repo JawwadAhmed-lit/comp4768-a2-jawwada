@@ -2,6 +2,7 @@ import 'package:a2_jawwada/domain/models/animal.dart';
 import 'package:a2_jawwada/ui/widget/animals/view_models/animals_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class ApplyScreen extends ConsumerStatefulWidget {
   const ApplyScreen({super.key, required this.animalId});
@@ -18,6 +19,8 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
   final _phoneController = TextEditingController();
   final _reasonController = TextEditingController();
   final _ageController = TextEditingController();
+  String? _visitTime;
+  bool _visitTimeMissing = false;
 
   @override
   void dispose() {
@@ -54,8 +57,19 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     return null;
   }
 
+  Future<void> _chooseVisitTime() async {
+    final time = await context.push<String>('/visit-times');
+    if (time == null || !mounted) return;
+    setState(() {
+      _visitTime = time;
+      _visitTimeMissing = false;
+    });
+  }
+
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    final fieldsValid = _formKey.currentState!.validate();
+    setState(() => _visitTimeMissing = _visitTime == null);
+    if (!fieldsValid || _visitTime == null) return;
   }
 
   @override
@@ -126,13 +140,21 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
               maxLines: 4,
               validator: _validateReason,
             ),
-          const SizedBox(height: 24),
-          Expanded(
-            
-            child: FilledButton(
-              onPressed: _submit,
-              child: const Text('Send Application'),
+          const SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: _chooseVisitTime,
+            child: const Text('Choose a visit time'),
+          ),
+          if (_visitTime != null) Text(_visitTime!),
+          if (_visitTimeMissing)
+            Text(
+              'Choose a visit time',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: _submit,
+            child: const Text('Send Application'),
           ),
         ],
       ),

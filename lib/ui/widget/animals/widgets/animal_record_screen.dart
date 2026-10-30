@@ -62,12 +62,10 @@ class AnimalRecordScreen extends ConsumerWidget {
         ] else
           Text(feeConversion(animal)),
         const SizedBox(height: 16),
-        Expanded(
-          child: FilledButton(
-            onPressed: () => context.go('/animals/${animal.id}/apply'),
-            child: Text(
-              animal.need == Need.foster ? 'Apply to foster' : 'Apply to adopt',
-            ),
+        FilledButton(
+          onPressed: () => context.go('/animals/${animal.id}/apply'),
+          child: Text(
+            animal.need == Need.foster ? 'Apply to foster' : 'Apply to adopt',
           ),
         ),
       ],
