@@ -31,29 +31,26 @@ class AnimalsScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Wrap(
-              spacing: 16,
+              alignment: WrapAlignment.center,
+              spacing: 8,
               runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                SegmentedButton<Species?>(
-                  showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment(value: null, label: Text('All')),
-                    ButtonSegment(value: Species.cat, label: Text('Cats')),
-                    ButtonSegment(value: Species.dog, label: Text('Dogs')),
-                    ButtonSegment(value: Species.other, label: Text('Other')),
-                  ],
-                  selected: {species},
-                  onSelectionChanged: (selection) =>
-                      _goTo(context, species: selection.first, need: need),
-                ),
-                FilterChip(
-                  label: const Text('Needs a foster home'),
-                  selected: need == Need.foster,
-                  onSelected: (selected) => _goTo(
+                _pill(context, 'All', species == null,
+                    () => _goTo(context, species: null, need: need)),
+                _pill(context, 'Cats', species == Species.cat,
+                    () => _goTo(context, species: Species.cat, need: need)),
+                _pill(context, 'Dogs', species == Species.dog,
+                    () => _goTo(context, species: Species.dog, need: need)),
+                _pill(context, 'Other', species == Species.other,
+                    () => _goTo(context, species: Species.other, need: need)),
+                _pill(
+                  context,
+                  'Needs a foster home',
+                  need == Need.foster,
+                  () => _goTo(
                     context,
                     species: species,
-                    need: selected ? Need.foster : null,
+                    need: need == Need.foster ? null : Need.foster,
                   ),
                 ),
               ],
@@ -71,6 +68,20 @@ class AnimalsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _pill(
+      BuildContext context, String label, bool selected, VoidCallback onTap) {
+    final colors = Theme.of(context).colorScheme;
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      showCheckmark: false,
+      shape: const StadiumBorder(),
+      selectedColor: colors.primary,
+      labelStyle: TextStyle(color: selected ? colors.onPrimary : colors.primary),
+      onSelected: (_) => onTap(),
+    );
+  }
+
   Widget _list(List<Animal> animals) {
     return ListView.builder(
       itemCount: animals.length,
@@ -80,14 +91,12 @@ class AnimalsScreen extends ConsumerWidget {
           onTap: () => context.go('/animals/${animal.id}'),
           leading: Icon(_speciesIcon(animal.species), size: 28),
           title: Text(animal.name),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${animal.breed} · ${animal.sex} · ${ageConvert(animal.ageMonths)}'),
-              if (animal.need == Need.foster)
-                const Text('Needs a foster home'),
-            ],
+          subtitle: Text(
+            '${animal.breed} · ${animal.sex} · ${ageConvert(animal.ageMonths)}',
           ),
+          trailing: animal.need == Need.foster
+              ? const Chip(label: Text('Needs a foster home'))
+              : null,
         );
       },
     );
