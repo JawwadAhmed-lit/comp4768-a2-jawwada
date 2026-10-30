@@ -26,7 +26,7 @@ final router = GoRouter(
           GoRoute(
             path: 'apply',
             builder: (context, state) =>
-                ApplyScreen(id: state.pathParameters['id']!),
+                ApplyScreen(animalId: state.pathParameters['id']!),
           ),
         ],
       ),
