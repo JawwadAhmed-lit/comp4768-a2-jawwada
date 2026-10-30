@@ -1,4 +1,5 @@
 import 'package:a2_jawwada/routing/router.dart';
+import 'package:a2_jawwada/ui/core/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -18,6 +19,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(routerConfig: router);
+    return MaterialApp.router(theme: appTheme, routerConfig: router);
   }
 }

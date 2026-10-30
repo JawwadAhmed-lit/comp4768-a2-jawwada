@@ -25,7 +25,7 @@ class AnimalsScreen extends ConsumerWidget {
     final animals = ref.watch(animalsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Animals')),
+      appBar: AppBar(title: const Text('Adopt & Foster')),
       body: Column(
         children: [
           Padding(
@@ -87,16 +87,19 @@ class AnimalsScreen extends ConsumerWidget {
       itemCount: animals.length,
       itemBuilder: (context, index) {
         final animal = animals[index];
-        return ListTile(
-          onTap: () => context.go('/animals/${animal.id}'),
-          leading: Icon(_speciesIcon(animal.species), size: 28),
-          title: Text(animal.name),
-          subtitle: Text(
-            '${animal.breed} · ${animal.sex} · ${ageConvert(animal.ageMonths)}',
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: ListTile(
+            onTap: () => context.go('/animals/${animal.id}'),
+            leading: Icon(_speciesIcon(animal.species), size: 28),
+            title: Text(animal.name),
+            subtitle: Text(
+              '${animal.breed} · ${animal.sex} · ${ageConvert(animal.ageMonths)}',
+            ),
+            trailing: animal.need == Need.foster
+                ? const Chip(label: Text('Needs a foster home'))
+                : null,
           ),
-          trailing: animal.need == Need.foster
-              ? const Chip(label: Text('Needs a foster home'))
-              : null,
         );
       },
     );
