@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void main() {
-  runApp(const MainApp());
+  usePathUrlStrategy();
+  runApp(
+    ProviderScope(
+      retry: (retryCount, error) => null,
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
