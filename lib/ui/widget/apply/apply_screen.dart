@@ -1,5 +1,7 @@
 import 'package:a2_jawwada/domain/models/animal.dart';
+import 'package:a2_jawwada/domain/models/application.dart';
 import 'package:a2_jawwada/ui/widget/animals/view_models/animals_view_model.dart';
+import 'package:a2_jawwada/ui/widget/apply/view_models/apply_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -66,10 +68,23 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     });
   }
 
-  void _submit() {
+  void _submit(Animal animal) {
     final fieldsValid = _formKey.currentState!.validate();
     setState(() => _visitTimeMissing = _visitTime == null);
     if (!fieldsValid || _visitTime == null) return;
+    ref.read(applyProvider.notifier).send(
+          Application(
+            animalId: animal.id,
+            animalName: animal.name,
+            need: animal.need,
+            fullName: _nameController.text.trim(),
+            phone: _phoneController.text,
+            visitTime: _visitTime!,
+            reason: animal.need == Need.foster
+                ? null
+                : _reasonController.text.trim(),
+          ),
+        );
   }
 
   @override
@@ -152,12 +167,41 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           const SizedBox(height: 24),
-          FilledButton(
-            onPressed: _submit,
-            child: const Text('Send Application'),
-          ),
+          _sendArea(animal),
         ],
       ),
     );
+  }
+
+  Widget _sendArea(Animal animal) {
+    final sendButton = FilledButton(
+      onPressed: () => _submit(animal),
+      child: const Text('Send application'),
+    );
+    return ref.watch(applyProvider).when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => Column(
+            children: [
+              Text(
+                '$error',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              const SizedBox(height: 8),
+              sendButton,
+            ],
+          ),
+          data: (sent) => sent
+              ? Column(
+                  children: [
+                    Text('Application sent for ${animal.name}'),
+                    const SizedBox(height: 8),
+                    FilledButton(
+                      onPressed: () => context.go('/animals/applications'),
+                      child: const Text('See my applications'),
+                    ),
+                  ],
+                )
+              : sendButton,
+        );
   }
 }
