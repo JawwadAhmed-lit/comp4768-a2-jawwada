@@ -1,5 +1,6 @@
 import 'package:a2_jawwada/domain/models/animal.dart';
 import 'package:a2_jawwada/ui/widget/animals/view_models/animals_view_model.dart';
+import 'package:a2_jawwada/ui/widget/applications/view_models/applications_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -62,13 +63,45 @@ class AnimalRecordScreen extends ConsumerWidget {
         ] else
           Text(feeConversion(animal)),
         const SizedBox(height: 16),
-        FilledButton(
+        _ApplicationStatus(animal: animal),
+      ],
+    );
+  }
+}
+
+class _ApplicationStatus extends ConsumerWidget {
+  const _ApplicationStatus({required this.animal});
+
+  final Animal animal;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final applications = ref.watch(applicationsProvider);
+
+    return applications.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Text('$error'),
+      data: (applications) {
+        final applied = applications.any((a) => a.animalId == animal.id);
+        if (applied) {
+          return Column(
+            children: [
+              const Text('Application pending'),
+              const SizedBox(height: 8),
+              FilledButton(
+                onPressed: () => context.go('/animals/applications'),
+                child: const Text('See my applications'),
+              ),
+            ],
+          );
+        }
+        return FilledButton(
           onPressed: () => context.go('/animals/${animal.id}/apply'),
           child: Text(
             animal.need == Need.foster ? 'Apply to foster' : 'Apply to adopt',
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
