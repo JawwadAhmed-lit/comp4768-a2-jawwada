@@ -1,4 +1,5 @@
 import 'package:a2_jawwada/domain/models/animal.dart';
+import 'package:a2_jawwada/ui/core/error_message.dart';
 import 'package:a2_jawwada/ui/widget/animals/view_models/animals_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +26,16 @@ class AnimalsScreen extends ConsumerWidget {
     final animals = ref.watch(animalsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Adopt & Foster')),
+      appBar: AppBar(
+        title: const Text('Adopt & Foster'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.assignment),
+            tooltip: 'My applications',
+            onPressed: () => context.go('/animals/applications'),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -59,7 +69,8 @@ class AnimalsScreen extends ConsumerWidget {
           Expanded(
             child: animals.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(child: Text('$error')),
+              error: (error, stackTrace) =>
+                  Center(child: ErrorMessage(error: error)),
               data: (animals) => _list(filterAnimals(animals, species, need)),
             ),
           ),
@@ -107,7 +118,7 @@ class AnimalsScreen extends ConsumerWidget {
 
   IconData _speciesIcon(Species species) => switch (species) {
         Species.cat => Icons.pets,
-        Species.dog => Icons.pets,
-        Species.other => Icons.cruelty_free,
+        Species.dog => Icons.cruelty_free,
+        Species.other => Icons.emoji_nature,
       };
 }

@@ -1,5 +1,6 @@
 import 'package:a2_jawwada/domain/models/animal.dart';
 import 'package:a2_jawwada/domain/models/application.dart';
+import 'package:a2_jawwada/ui/core/error_message.dart';
 import 'package:a2_jawwada/ui/widget/animals/view_models/animals_view_model.dart';
 import 'package:a2_jawwada/ui/widget/apply/view_models/apply_view_model.dart';
 import 'package:flutter/material.dart';
@@ -95,7 +96,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
       appBar: AppBar(title: const Text('Apply')),
       body: animals.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('$error')),
+        error: (error, stackTrace) => Center(child: ErrorMessage(error: error)),
         data: (animals) {
           final animal =
               animals.where((a) => a.id == widget.animalId).firstOrNull;
@@ -182,10 +183,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) => Column(
             children: [
-              Text(
-                '$error',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
+              ErrorMessage(error: error),
               const SizedBox(height: 8),
               sendButton,
             ],
