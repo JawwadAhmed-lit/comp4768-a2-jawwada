@@ -1,6 +1,7 @@
-
-
-
 import 'package:flutter/material.dart';
 
-const greenDark = Color.fromARGB(199, 0, 100, 58);
+const tealGreen = Color(0xFF006A60);
+
+final appTheme = ThemeData(
+  colorScheme: ColorScheme.fromSeed(seedColor: tealGreen, primary: tealGreen),
+);

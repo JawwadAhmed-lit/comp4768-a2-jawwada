@@ -1,0 +1,207 @@
+import 'package:a2_jawwada/domain/models/animal.dart';
+import 'package:a2_jawwada/domain/models/application.dart';
+import 'package:a2_jawwada/ui/widget/animals/view_models/animals_view_model.dart';
+import 'package:a2_jawwada/ui/widget/apply/view_models/apply_view_model.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+class ApplyScreen extends ConsumerStatefulWidget {
+  const ApplyScreen({super.key, required this.animalId});
+
+  final String animalId;
+
+  @override
+  ConsumerState<ApplyScreen> createState() => _ApplyScreenState();
+}
+
+class _ApplyScreenState extends ConsumerState<ApplyScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _reasonController = TextEditingController();
+  final _ageController = TextEditingController();
+  String? _visitTime;
+  bool _visitTimeMissing = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _reasonController.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
+
+  String? _validName(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Enter your name';
+    return null;
+  }
+
+  String? _validPhone(String? value) {
+    if (!RegExp(r'^\d{10}$').hasMatch(value ?? '')) {
+      return 'Enter 10 digits';
+    }
+    return null;
+  }
+
+  String? _validateReason(String? value) {
+    if ((value ?? '').trim().length < 30) {
+      return 'Write at least 30 characters';
+    }
+    return null;
+  }
+
+  String? _validateAge(String? value) {
+    final age = int.tryParse((value ?? '').trim());
+    if (age == null) return 'You must be 18 or older to foster';
+    if (age < 18) return 'You must be 18 or older to foster';
+    return null;
+  }
+
+  Future<void> _chooseVisitTime() async {
+    final time = await context.push<String>('/visit-times');
+    if (time == null || !mounted) return;
+    setState(() {
+      _visitTime = time;
+      _visitTimeMissing = false;
+    });
+  }
+
+  void _submit(Animal animal) {
+    final fieldsValid = _formKey.currentState!.validate();
+    setState(() => _visitTimeMissing = _visitTime == null);
+    if (!fieldsValid || _visitTime == null) return;
+    ref.read(applyProvider.notifier).send(
+          Application(
+            animalId: animal.id,
+            animalName: animal.name,
+            need: animal.need,
+            fullName: _nameController.text.trim(),
+            phone: _phoneController.text,
+            visitTime: _visitTime!,
+            reason: animal.need == Need.foster
+                ? null
+                : _reasonController.text.trim(),
+          ),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final animals = ref.watch(animalsProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Apply')),
+      body: animals.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(child: Text('$error')),
+        data: (animals) {
+          final animal =
+              animals.where((a) => a.id == widget.animalId).firstOrNull;
+          if (animal == null) {
+            return const Center(child: Text('Animal not found'));
+          }
+          return _form(context, animal);
+        },
+      ),
+    );
+  }
+
+  Widget _form(BuildContext context, Animal animal) {
+    final fostering = animal.need == Need.foster;
+    return Form(
+      key: _formKey,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(
+            fostering
+                ? 'Foster ${animal.name}'
+                : 'Adopt ${animal.name}',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          if (!fostering) ...[
+            const SizedBox(height: 4),
+            Text(feeConversion(animal)),
+          ],
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _nameController,
+            decoration: const InputDecoration(labelText: 'Full name'),
+            validator: _validName,
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _phoneController,
+            decoration: const InputDecoration(labelText: 'Phone'),
+            keyboardType: TextInputType.phone,
+            validator: _validPhone,
+          ),
+          const SizedBox(height: 16),
+          if (fostering)
+            TextFormField(
+              controller: _ageController,
+              decoration: const InputDecoration(labelText: 'Your age'),
+              keyboardType: TextInputType.number,
+              validator: _validateAge,
+            )
+          else
+            TextFormField(
+              controller: _reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Why is this animal a good match for you?',
+              ),
+              maxLines: 4,
+              validator: _validateReason,
+            ),
+          const SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: _chooseVisitTime,
+            child: const Text('Choose a visit time'),
+          ),
+          if (_visitTime != null) Text(_visitTime!),
+          if (_visitTimeMissing)
+            Text(
+              'Choose a visit time',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          const SizedBox(height: 24),
+          _sendArea(animal),
+        ],
+      ),
+    );
+  }
+
+  Widget _sendArea(Animal animal) {
+    final sendButton = FilledButton(
+      onPressed: () => _submit(animal),
+      child: const Text('Send application'),
+    );
+    return ref.watch(applyProvider).when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => Column(
+            children: [
+              Text(
+                '$error',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              const SizedBox(height: 8),
+              sendButton,
+            ],
+          ),
+          data: (sent) => sent
+              ? Column(
+                  children: [
+                    Text('Application sent for ${animal.name}'),
+                    const SizedBox(height: 8),
+                    FilledButton(
+                      onPressed: () => context.go('/animals/applications'),
+                      child: const Text('See my applications'),
+                    ),
+                  ],
+                )
+              : sendButton,
+        );
+  }
+}
