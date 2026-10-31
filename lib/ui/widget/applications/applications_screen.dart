@@ -1,4 +1,5 @@
 import 'package:a2_jawwada/domain/models/animal.dart';
+import 'package:a2_jawwada/domain/models/application.dart';
 import 'package:a2_jawwada/ui/widget/applications/view_models/applications_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,12 +32,47 @@ class ApplicationsScreen extends ConsumerWidget {
                     '${application.need == Need.foster ? 'Foster' : 'Adopt'}'
                     ' · ${application.visitTime}',
                   ),
+                  trailing: TextButton(
+                    onPressed: () => _withdraw(context, ref, application),
+                    child: const Text('Withdraw'),
+                  ),
                 );
-              
+
             },
           );
         },
       ),
     );
+  }
+
+  Future<void> _withdraw(
+    BuildContext context,
+    WidgetRef ref,
+    Application application,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        content: Text(
+          'Withdraw your application for ${application.animalName}?',
+          style: const TextStyle(fontSize: 22),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => dialogContext.pop(false),
+            child: const Text('Cancel', style: TextStyle(fontSize: 18)),
+          ),
+          TextButton(
+            onPressed: () => dialogContext.pop(true),
+            child: const Text('Withdraw', style: TextStyle(fontSize: 18)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      ref
+          .read(applicationsCommandsProvider.notifier)
+          .withdraw(application.animalId);
+    }
   }
 }

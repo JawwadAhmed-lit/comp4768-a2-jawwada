@@ -116,7 +116,7 @@ class AnimalsScreen extends ConsumerWidget {
 
   IconData _speciesIcon(Species species) => switch (species) {
         Species.cat => Icons.pets,
-        Species.dog => Icons.pets,
-        Species.other => Icons.cruelty_free,
+        Species.dog => Icons.cruelty_free,
+        Species.other => Icons.emoji_nature,
       };
 }
