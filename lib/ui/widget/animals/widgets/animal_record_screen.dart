@@ -1,4 +1,5 @@
 import 'package:a2_jawwada/domain/models/animal.dart';
+import 'package:a2_jawwada/ui/core/error_message.dart';
 import 'package:a2_jawwada/ui/widget/animals/view_models/animals_view_model.dart';
 import 'package:a2_jawwada/ui/widget/applications/view_models/applications_view_model.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class AnimalRecordScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Animal')),
       body: animals.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('$error')),
+        error: (error, stackTrace) => Center(child: ErrorMessage(error: error)),
         data: (animals) {
           final animal = animals.where((a) => a.id == id).firstOrNull;
           if (animal == null) {
@@ -80,7 +81,7 @@ class _ApplicationStatus extends ConsumerWidget {
 
     return applications.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Text('$error'),
+      error: (error, stackTrace) => ErrorMessage(error: error),
       data: (applications) {
         final applied = applications.any((a) => a.animalId == animal.id);
         if (applied) {

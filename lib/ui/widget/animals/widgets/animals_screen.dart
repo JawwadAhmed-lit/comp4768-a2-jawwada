@@ -1,4 +1,5 @@
 import 'package:a2_jawwada/domain/models/animal.dart';
+import 'package:a2_jawwada/ui/core/error_message.dart';
 import 'package:a2_jawwada/ui/widget/animals/view_models/animals_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -68,7 +69,8 @@ class AnimalsScreen extends ConsumerWidget {
           Expanded(
             child: animals.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(child: Text('$error')),
+              error: (error, stackTrace) =>
+                  Center(child: ErrorMessage(error: error)),
               data: (animals) => _list(filterAnimals(animals, species, need)),
             ),
           ),

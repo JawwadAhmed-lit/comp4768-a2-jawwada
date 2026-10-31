@@ -1,5 +1,6 @@
 import 'package:a2_jawwada/domain/models/animal.dart';
 import 'package:a2_jawwada/domain/models/application.dart';
+import 'package:a2_jawwada/ui/core/error_message.dart';
 import 'package:a2_jawwada/ui/widget/applications/view_models/applications_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +17,7 @@ class ApplicationsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('My applications')),
       body: applications.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('$error')),
+        error: (error, stackTrace) => Center(child: ErrorMessage(error: error)),
         data: (applications) {
           if (applications.isEmpty) {
             return const Center(child: Text('No applications yet'));
