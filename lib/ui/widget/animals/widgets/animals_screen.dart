@@ -25,7 +25,16 @@ class AnimalsScreen extends ConsumerWidget {
     final animals = ref.watch(animalsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Adopt & Foster')),
+      appBar: AppBar(
+        title: const Text('Adopt & Foster'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.assignment),
+            tooltip: 'My applications',
+            onPressed: () => context.go('/animals/applications'),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
